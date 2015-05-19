@@ -1,0 +1,8 @@
++ You already looked into Google Page Speed
++ Performance tests; I haven't heard of Munin before
+? Use sprites for...?
++ Improvements are basic, inexpensive
+? What do you mean by "Reduce abstraction"?
++ Caching but what will you cache?
+
+9 / 10

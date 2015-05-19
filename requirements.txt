@@ -1,0 +1,8 @@
+django-bootstrap3
+django-html5-appcache
+redis
+django-redis-cache 
+django-compressor
+django-tastypie
+pusher
+django-tastypie-swagger

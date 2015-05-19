@@ -1,0 +1,6 @@
+*.pyc
+env/
+*.sqlite3
+uploads/post_image/*
+STATIC_ROOT/*
+poster/migrations/*

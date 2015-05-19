@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="col-md-2 col-xs-1"></div>
+    
+    
+        <div class="col-xs-12 col-md-8">
+
+            
+            <div class="well well-lg text-center">
+
+
+            <h2 class="media heading">Login</h2>
+            <!-- Form Below -->
+            <div class="well well-lg">
+
+                <form action="/login/" method="post" class="form-horizontal">
+
+                    {% csrf_token %}
+
+                    
+                    <div class="form-group">
+                        <label for="InputTitle" class="col-sm-4 control-label">Username: </label>
+                        <div class="col-sm-4">
+                            {{form.username}}
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" >
+                        <label for="InputUser" class="col-sm-4 control-label">Password: </label>
+                        <div class="col-sm-4">
+                            {{form.password}}
+                        </div>
+                    </div>
+             
+                    <input type="submit" value="Login" />           
+                </form>  
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-xs-1"></div>
+
+{% endblock %}
+

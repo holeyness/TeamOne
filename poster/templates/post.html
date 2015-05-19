@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+      
+{% block content %}
+
+{% if navposts %}
+<nav class="navbar navbar-default">
+  <div class="container-fluid row">
+    <div class="text-center" >
+        <ul class="pagination" style="margin: 10px 0px;">
+
+          <li>
+            <a href="/post/{{prev_post}}" style="height: 94px; display: table;" aria-label="Previous">
+              <span style="display: table-cell; vertical-align: middle;" aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% for post in navposts %}   
+              <li>
+                <a href="/post/{{post.id}}">
+                  <img class="img-responsive" style="height: 80px;" alt="Thumbnail" src="/uploads/{{post.post_id.image}}">
+                </a>
+              </li> 
+          {% endfor %}
+           <li>
+            <a class="" href="/post/{{next_post}}" style="height: 94px; display: table;" aria-label="Next">
+              <span style="display: table-cell; vertical-align: middle;" aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+  </div>
+</nav>
+{% endif %}
+
+{% if current_post %}
+    
+    <div class="row">
+    <!-- margin -->
+      <div class="col-md-2 col-xs-1"></div>
+       
+      <div class="col-xs-6 col-md-8">
+          <div class="well well-lg">
+
+              <h2 class="media-heading"> {{current_post.post_id.title}}</h2>
+              <h5>By: {{current_post.user_id}} </h5>
+              {% if current_post.post_id.image %}
+              <div class="well well-lg">
+                    <img class="img-responsive img-rounded " src="/uploads/{{current_post.post_id.image}}" />
+              </div>
+              {% endif %}                     
+            
+                              
+              <p>{{current_post.post_id.description}}</p>
+          
+              <h6><small>Created date: {{current_post.post_id.created_date}}</small></h6>
+              <h6><small>Modified date: {{current_post.post_id.modified_date}}</small></h6>
+          </div>
+                               
+      </div>
+      <!-- margin -->
+      <div class="col-md-2 col-xs-1"></div>
+    </div>
+   
+
+{% endif %}
+{% endblock %}

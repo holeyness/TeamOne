@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+{% for user_post in user_posts %}
+    <div class="row post-row" divid="{{user_post.post_id.id}}">
+        <!-- margin -->
+        <div class="col-md-2 col-xs-1"></div>
+           
+        <div class="col-xs-10 col-md-8" >
+            <div class="well well-lg">
+                <div class="row">
+
+                    <div class="col-md-8 col-xs-4">
+
+                        <a href="/post/{{user_post.id}}">
+                            <h2 class="media-heading"> {{user_post.post_id.title}}</h2>
+                        </a>
+
+                        <h5>By: {{user_post.user_id}}</h5>
+                    </div>
+                    <!-- like button AJAX request -->
+                    <div class="col-md-2 col-xs-3">
+                        {% if user.is_authenticated %}
+                            <input type="button" class="btn btn-info like" name="{{ user_post.post_id.id }}" value="Fresh" />
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-1 col-xs-1">
+                        <!-- Begin Visual Timer Code -->
+
+                            <input class="knob" knobid="{{user_post.post_id.id}}" data-width=75 data-displayInput=false data-min="0" data-max="30" data-readOnly=true data-thickness=.3 data-height=75 data-fontWeight=5 
+                            timeleft={{user_post.timeleft}} active=true>
+
+                        <!-- End Visual Timer Code -->
+
+                    </div>
+
+                   
+                </div>
+                {% if user_post.post_id.image %}
+                
+                <div class="well well-lg">
+                    <a href="/post/{{user_post.id}}">
+                        <img class="img-responsive img-rounded " src="/uploads/{{user_post.post_id.image}}" />
+                    </a>
+                </div>
+                {% endif %}                     
+                                          
+                <p>{{user_post.post_id.description}}</p>
+               
+                <h5 class="likes">Freshness: <span class="numlikes" post_id="{{user_post.post_id.id}}">{{user_post.post_id.num_likes}}</span></h5>
+                <h6><small>Created date: {{user_post.post_id.created_date}}</small></h6>
+                <h6><small>Modified date: {{user_post.post_id.modified_date}}</small></h6>
+            </div>
+                                 
+        </div>
+        <!-- margin -->
+        <div class="col-md-2 col-xs-1"></div>
+    </div>
+{% endfor %}
+
+
+<script type="text/javascript">
+    clocktime = 30;
+    // Enable pusher logging - don't include this in production
+    Pusher.log = function(message) {
+      if (window.console && window.console.log) {
+        window.console.log(message);
+      }
+    };
+
+    //Pusher code for new Posts
+
+    var pusher = new Pusher('5a491f6fa070d42a9281');
+
+    var postchannel = pusher.subscribe('new_posts');
+    postchannel.bind('post_event', function(data) {
+
+
+        var newDiv = $("#post_template").clone();
+        newDiv.attr("divid", data.post_id);
+        newDiv.find('.post_title').html(data.title);
+        newDiv.find('.post_id').attr("href", "/post/"+ data.id);
+        newDiv.find('.post_user').html("By: " + data.user);
+        newDiv.find('.like').attr("name", data.post_id);
+        newDiv.find('.knob').attr("knobid", data.post_id);
+        newDiv.find('.knob').attr("timeleft", clocktime);
+        newDiv.find('.numlikes').attr("post_id", data.post_id);
+        newDiv.find('.numlikes').html(data.num_likes);
+
+
+        if (data.type == 1) {
+            newDiv.find('.post_image_div').attr("style", "");
+            newDiv.find('.post_image').attr("src", "/uploads/"+data.image);
+        } else {
+            newDiv.find('.post_image_div').attr("style", "display: none;");
+        }
+
+        newDiv.find('.post_description').html(data.description);
+        newDiv.find('.post_created_date').html("Created date: "+ data.created_date);       
+        newDiv.find('.post_modified_date').html("Modified date: "+ data.modified_date);  
+        newDiv.show();
+        newDiv.find('.knob').knob();
+        $(newDiv).appendTo("#main_loop");
+    });
+
+    //Pusher Code for updating Likes
+
+
+    var likechannel = pusher.subscribe('likes');
+    likechannel.bind('like_event', function(data) {
+        var post_id = data.post_id
+        $('.numlikes[post_id=' + post_id + ']').text(parseInt($('.numlikes[post_id=' + post_id + ']').text(), 10) + 1);
+        $('.knob[knobid=' + post_id + ']').attr("timeleft", clocktime);
+        tinysort(document.getElementsByClassName('post-row'), 'span.numlikes');
+    });
+
+    var messagechannel = pusher.subscribe('messages');
+    messagechannel.bind('my_event', function(data) {
+        alert(data.message);
+
+
+    });
+</script>
+
+<script>
+//asynchronous call to update like value in database
+$('body').on('click', '.like', function(){
+      $.ajax({
+               type: "POST",
+               url: "{% url 'like' %}",
+               data: {'id': $(this).attr('name'), 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+               dataType: "text",
+               success: function(response) {
+                      console.log('You liked this')
+                },
+                error: function(rs, e) {
+                       alert(rs.responseText);
+                }
+          });
+    })
+</script>
+
+<script>
+
+
+    var knobfunction = function (value1, inputknobid){
+        $('.knob[knobid=' +  inputknobid + ']').val(value1).trigger('change');
+        $('.knob[knobid=' +  inputknobid + ']').attr("timeleft", value1-1);
+
+    };
+
+    var persecond = function (){
+        $('.knob').each(function () {
+            if ($(this).attr("timeleft") >= 0) {
+                knobfunction($(this).attr("timeleft"), $(this).attr("knobid"));
+            } else {
+                //delete the element
+                var knobid = $(this).attr("knobid");
+
+                $('.post-row[divid=' + knobid + ']').remove();                
+
+            }
+
+        });        
+
+    }
+
+    $(document).ready( function() {
+                tinysort.defaults.order = 'desc';
+                $('.knob').each(function() {
+                    if ($(this).attr("active") === "true") {
+                        console.log("activate");
+                        $(this).knob();
+                    }
+                });
+                persecond();
+                setInterval(persecond,1000);
+
+            });
+</script>
+
+<div class="row post-row" id="post_template" style="display: none;">
+       
+        <div class="col-md-2 col-xs-1"></div>
+           
+        <div class="col-xs-10 col-md-8" >
+            <div class="well well-lg">
+                <div class="row">
+
+                    <div class="col-md-8 col-xs-4">   
+
+                        <a class="post_id" href="/post/">
+                            <h2 class="media-heading post_title"></h2>
+                        </a>
+
+                        <h5 class="post_user">By:</h5>
+                    </div>
+
+
+                    <div class="col-md-2 col-xs-3">
+
+                        {% if user.is_authenticated %}
+                            <input type="button" class="like btn btn-info" value="Fresh" />
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-1 col-xs-1">
+                   
+                        <input class="knob" data-width=75 data-displayInput=false data-min="0" data-max="30" data-readOnly=true data-thickness=.3 data-height=75 data-fontWeight=5 active=false>
+                    
+                    </div>
+                </div>                    
+                <div class="well well-lg post_image_div">
+                    <a class="post_id" href="/post/">
+                        <img class="img-responsive img-rounded post_image" />
+                    </a>
+                </div>                     
+              
+                                
+                <p class="post_description"></p>
+
+                <h5 class="likes">Freshness: <span class="numlikes"></span></h5>
+                <h6><small class="post_created_date">Created date: </small></h6>
+                <h6><small class="post_modified_date">Modified date:</small></h6>
+
+            </div>
+                                 
+        </div>
+   
+        <div class="col-md-2 col-xs-1"></div>
+</div>
+
+{% endblock %}
+
+
